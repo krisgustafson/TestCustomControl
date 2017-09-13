@@ -47,13 +47,15 @@
                 </Slider>
 
                 <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4">
-                    <Button Margin="6,5" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="BackButton"
+                    <Button Margin="6,5" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="BackButton" 
+                            Click="DecreaseClicked" IsEnabled="{Binding IsDecreaseEnableable, ElementName=userControl}"
                             >
                         <Button.Content>
                             <SymbolIcon Symbol="Back" MaxHeight="14" MaxWidth="18"/>
                         </Button.Content>
                     </Button>
-                    <Button Margin="6,4" HorizontalAlignment="Right" VerticalAlignment="Center" x:Name="ForwardButton"
+                    <Button Margin="6,4" HorizontalAlignment="Right" VerticalAlignment="Center" x:Name="ForwardButton" 
+                            Click="IncreaseClicked" IsEnabled="{Binding IsIncreaseEnableable, ElementName=userControl}"
                             >
                         <Button.Content>
                             <SymbolIcon Symbol="Forward" MaxHeight="14" MaxWidth="186"/>
@@ -85,7 +87,7 @@
 
                 <Button Grid.Row="2" Grid.Column="1" Margin="6" FontSize="36" x:Name="HomeButton"
                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                        Click="HomeEvent" 
+                        Click="HomeClicked" 
                         >
                     <Button.Content>
                         <SymbolIcon Symbol="Home" Foreground="#FF0B5C02"/>

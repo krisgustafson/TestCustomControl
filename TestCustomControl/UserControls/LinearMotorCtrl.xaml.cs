@@ -16,6 +16,55 @@ namespace TestCustomControl.UserControls
 
 
 
+        #region Dependency Properties
+        /// <summary>
+        /// The furthest motor position along the axis
+        /// </summary>
+        public double MaxPosition
+        {
+            get { return (double)GetValue(MaxPositionProperty); }
+            set { SetValue(MaxPositionProperty, value); }
+        }
+        public static readonly DependencyProperty MaxPositionProperty =
+            DependencyProperty.Register("MaxPosition", typeof(double), typeof(LinearMotorCtrl), new PropertyMetadata(2000.0));
+
+
+
+        /// <summary>
+        /// The amount by which clicking the increase/decrease buttons move the motor along the axis
+        /// </summary>
+        public double Step
+        {
+            get { return (double)GetValue(StepProperty); }
+            set { SetValue(StepProperty, value); }
+        }
+        public static readonly DependencyProperty StepProperty =
+            DependencyProperty.Register("Step", typeof(double), typeof(LinearMotorCtrl), new PropertyMetadata(10.0));
+
+
+
+
+        public bool IsDecreaseEnableable
+        {
+            get { return (bool)GetValue(IsDecreaseEnableableProperty); }
+            set { SetValue(IsDecreaseEnableableProperty, value); }
+        }
+        public static readonly DependencyProperty IsDecreaseEnableableProperty =
+            DependencyProperty.Register("IsDecreaseEnableable", typeof(bool), typeof(LinearMotorCtrl), new PropertyMetadata(false));
+
+
+
+
+        public bool IsIncreaseEnableable
+        {
+            get { return (bool)GetValue(IsIncreaseEnableableProperty); }
+            set { SetValue(IsIncreaseEnableableProperty, value); }
+        }
+        public static readonly DependencyProperty IsIncreaseEnableableProperty =
+            DependencyProperty.Register("IsIncreaseEnableable", typeof(bool), typeof(LinearMotorCtrl), new PropertyMetadata(false));
+
+
+
 
         public string MotorLabel
         {
@@ -27,7 +76,9 @@ namespace TestCustomControl.UserControls
                 new PropertyMetadata(null));
 
 
-
+        /// <summary>
+        /// Motor's new or current position along the axis
+        /// </summary>
         public double CurrentPosition
         {
             get { return (double)GetValue(CurrentPositionProperty); }
@@ -41,11 +92,15 @@ namespace TestCustomControl.UserControls
         {
             double newPosition = (double)d.GetValue(SliderPositionProperty);
             if (newPosition != (double)e.NewValue)
+            {
                 d.SetValue(SliderPositionProperty, e.NewValue);
+                EnableDisableIncreaseDecreaseButtons(d, (double)e.NewValue);
+            }
         }
 
-
-
+        /// <summary>
+        /// Slider control, tied in with CurrentPosition
+        /// </summary>
         public double SliderPosition
         {
             get { return (double)GetValue(SliderPositionProperty); }
@@ -59,42 +114,62 @@ namespace TestCustomControl.UserControls
         {
             double newPosition = (double)d.GetValue(CurrentPositionProperty);
             if (newPosition != (double)e.NewValue)
+            {
                 d.SetValue(CurrentPositionProperty, e.NewValue);
+                EnableDisableIncreaseDecreaseButtons(d, (double)e.NewValue);
+            }
         }
 
 
-
-        public int MoveXAxisToLeft
+        /// <summary>
+        /// Enable or disable the Increase button depending on the new/current motor position
+        /// </summary>
+        /// <param name="d">Dependency property for either CurrentPosition or SliderPosition</param>
+        /// <param name="newPosition">New motor position relative to last position</param>
+        private static void EnableDisableIncreaseDecreaseButtons(DependencyObject d, double newPosition)
         {
-            get { return (int)GetValue(MoveXAxisToLeftProperty); }
-            set { SetValue(MoveXAxisToLeftProperty, value); }
+            double step = (double)d.GetValue(StepProperty);
+            d.SetValue(IsDecreaseEnableableProperty, (newPosition >= step));
+            double maxPosition = (double)d.GetValue(MaxPositionProperty);
+            d.SetValue(IsIncreaseEnableableProperty, (newPosition <= maxPosition - step));
         }
-        public static readonly DependencyProperty MoveXAxisToLeftProperty =
-            DependencyProperty.Register("MoveXAxisToLeft", typeof(int), typeof(LinearMotorCtrl), new PropertyMetadata(0));
+        #endregion
 
 
-
-        public int MoveXAxisToRight
-        {
-            get { return (int)GetValue(MoveXAxisToRightProperty); }
-            set { SetValue(MoveXAxisToRightProperty, value); }
-        }
-        public static readonly DependencyProperty MoveXAxisToRightProperty =
-            DependencyProperty.Register("MoveXAxisToRight", typeof(int), typeof(LinearMotorCtrl), new PropertyMetadata(0));
-
-
-
-
-        private void HomeEvent(object sender, RoutedEventArgs e)
+        #region Event handlers
+        private void HomeClicked(object sender, RoutedEventArgs e)
         {
             CurrentPosition = 0.0;
             SliderPosition = 0.0;
+            IsDecreaseEnableable = false;
+            IsIncreaseEnableable = true;
         }
 
         private void MotorPos_LostFocus(object sender, RoutedEventArgs e)
         {
             if (SliderPosition != CurrentPosition)
+            {
                 SliderPosition = CurrentPosition;
+            }
         }
+
+        private void DecreaseClicked(object sender, RoutedEventArgs e)
+        {
+            if (CurrentPosition >= Step)
+            {
+                CurrentPosition -= Step;
+                IsDecreaseEnableable = (CurrentPosition >= Step);
+            }
+        }
+
+        private void IncreaseClicked(object sender, RoutedEventArgs e)
+        {
+            if (CurrentPosition <= MaxPosition - Step)
+            {
+                CurrentPosition += Step;
+                IsIncreaseEnableable = (CurrentPosition < MaxPosition - Step);
+            }
+        }
+        #endregion
     }
 }

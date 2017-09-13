@@ -107,6 +107,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <PRIResource Include="Strings\en-US\Resources.resw" />
     <None Include="TestCustomControl_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +140,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Behaviors\" />
     <Folder Include="ViewModel\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
