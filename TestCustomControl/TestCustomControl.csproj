@@ -96,6 +96,8 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Behaviors\TextBoxBehaviors.cs" />
+    <Compile Include="Converters\FormatNumericConverter.cs" />
+    <Compile Include="Utilities\CultureInfoHelper.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

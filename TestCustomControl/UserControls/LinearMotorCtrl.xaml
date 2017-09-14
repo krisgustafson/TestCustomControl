@@ -4,14 +4,17 @@
     xmlns:local="using:TestCustomControl.UserControls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity" 
-    xmlns:Core="using:Microsoft.Xaml.Interactions.Core" 
     xmlns:Behave="using:TestCustomControl.Behaviors"
+    xmlns:Convert="using:TestCustomControl.Converters"
     x:Name="userControl"
     x:Class="TestCustomControl.UserControls.LinearMotorCtrl"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignHeight="250"
+    d:DesignWidth="300">
+
+    <UserControl.Resources>
+        <Convert:FormatNumericConverter x:Key="FormatNumber"/>
+    </UserControl.Resources>
 
 
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -35,7 +38,7 @@
                                MinWidth="80"/>
 
                     <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left"
-                                Text="{x:Bind Mode=OneWay, Path=MotorPos.Text}"/>
+                                Text="{x:Bind Mode=OneWay, Path=MotorPos.Text, Converter={StaticResource FormatNumber}}"/>
                 </StackPanel>
                 <TextBox Grid.Row="0" Grid.Column="1" Margin="0,0,6,0" MinWidth="90" x:Name="MotorPos" HorizontalAlignment="Right" 
                          HorizontalContentAlignment="Right" 
