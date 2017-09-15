@@ -43,6 +43,8 @@
                 <TextBox Grid.Row="0" Grid.Column="1" Margin="0,0,6,0" MinWidth="90" x:Name="MotorPos" HorizontalAlignment="Right" 
                          HorizontalContentAlignment="Right" 
                          Behave:TextBoxBehaviors.IsSelectAllText="True"
+                         Behave:TextBoxBehaviors.MaxLimit="3000"
+                         Behave:TextBoxBehaviors.IsNumericOnly="True"
                          Text="{Binding CurrentPosition, ElementName=userControl, Mode=TwoWay}" 
                          LostFocus="MotorPos_LostFocus">
                 </TextBox>

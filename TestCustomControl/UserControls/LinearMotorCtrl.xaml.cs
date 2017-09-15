@@ -1,4 +1,5 @@
 ﻿using System;
+using TestCustomControl.Utilities;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -150,6 +151,15 @@ namespace TestCustomControl.UserControls
             if (SliderPosition != CurrentPosition)
             {
                 SliderPosition = CurrentPosition;
+            }
+
+            if (sender is TextBox)
+            {
+                TextBox tb = (TextBox)sender;
+                if (tb.Text.EndsWith(CultureInfoHelper.DecimalSeparator))
+                {
+                    tb.Text += "0";
+                }
             }
         }
 

@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Windows.UI.Core;
+using TestCustomControl.Utilities;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+
 
 namespace TestCustomControl.Behaviors
 {
     /// <summary>
     /// Extra text box behaviors: 
     /// (1) select all text on gaining focus
-    /// (2) Prevent entry of more than a maximum number
+    /// (2) force digits (with decimal point) entry only
+    /// (3) allow one decimal separator in the input number (for a double value)
     /// </summary>
     public static class TextBoxBehaviors
     {
@@ -26,11 +23,18 @@ namespace TestCustomControl.Behaviors
             set;
         }
 
-        private static Int32 DefaultMaxValue
+        //private static Int32 DefaultMaxValue
+        //{
+        //    get => 2000;
+        //}
+
+        private static bool NumericOnly
         {
-            get => 2000;
+            get;
+            set;
         }
         #endregion
+
 
         #region Select All Text
         /// <summary>
@@ -57,23 +61,50 @@ namespace TestCustomControl.Behaviors
                 new PropertyMetadata(false, new PropertyChangedCallback(IsSelectAllTextPropertyChanged)));
         #endregion
 
-        #region MaxLimit
-        public static String GetMaxLimit(DependencyObject obj, String value)
+
+        //#region MaxLimit
+        //public static String GetMaxLimit(DependencyObject obj)
+        //{
+        //    return (String)obj.GetValue(MaxLimitProperty);
+        //}
+
+        ///// <summary>
+        ///// Sets the highest number (numeric entry) allowed entered in the text box
+        ///// </summary>
+        //public static void SetMaxLimit(DependencyObject obj, String value)
+        //{
+        //    obj.SetValue(MaxLimitProperty, value);
+        //}
+
+        //public static readonly DependencyProperty MaxLimitProperty =
+        //    DependencyProperty.RegisterAttached(
+        //        "MaxLimit",
+        //        typeof(String),
+        //        typeof(TextBoxBehaviors),
+        //        new PropertyMetadata(String.Empty, new PropertyChangedCallback(OnMaxLimitPropertyChanged)));
+        //#endregion
+
+
+        #region IsNumeric
+        public static bool GetIsNumericOnly(DependencyObject obj)
         {
-            return (String)obj.GetValue(MaxLimitProperty);
+            return (bool)obj.GetValue(IsNumericOnlyProperty);
         }
 
-        public static void SetMaxLimit(DependencyObject obj, String value)
+        /// <summary>
+        /// Sets whether the text box allows only numeric entry
+        /// </summary>
+        public static void SetIsNumericOnly(DependencyObject obj, bool value)
         {
-            obj.SetValue(MaxLimitProperty, value);
+            obj.SetValue(IsNumericOnlyProperty, value);
         }
 
-        public static readonly DependencyProperty MaxLimitProperty =
+        public static readonly DependencyProperty IsNumericOnlyProperty =
             DependencyProperty.RegisterAttached(
-                "MaxLimit",
-                typeof(String),
+                "IsNumericOnly",
+                typeof(bool),
                 typeof(TextBoxBehaviors),
-                new PropertyMetadata(String.Empty, new PropertyChangedCallback(OnMaxLimitPropertyChanged)));
+                new PropertyMetadata(false, new PropertyChangedCallback(OnIsNumericOnlyPropertyChanged)));
         #endregion
 
 
@@ -85,7 +116,10 @@ namespace TestCustomControl.Behaviors
             {
                 if ((bool)e.NewValue)
                 {
-                    textBox.KeyDown += TextBox_KeyDown;
+                    if (NumericOnly)
+                    {
+                        textBox.KeyDown += TextBox_KeyDown;
+                    }
                     textBox.GotFocus += SelectAllText;
                 }
                 else
@@ -97,22 +131,23 @@ namespace TestCustomControl.Behaviors
         }
 
         private static void TextBox_KeyDown(object sender, KeyRoutedEventArgs keyArgs)
-        {
-            if (keyArgs.KeyStatus.IsKeyReleased == false && 
-                (keyArgs.Key != Windows.System.VirtualKey.Delete && keyArgs.Key != Windows.System.VirtualKey.Back))
+        {   // preview key press
+            TextBox tb = (TextBox)sender;
+            if (keyArgs.KeyStatus.IsKeyReleased == false)
             {
-                if (sender != null)
+                if (keyArgs.Key != VirtualKey.Delete && keyArgs.Key != VirtualKey.Back &&
+                    keyArgs.Key != VirtualKey.Tab && keyArgs.Key != VirtualKey.Enter)
                 {
-                    TextBox tb = (TextBox)sender;
-                    if (tb != null)
-                    {
-                        if (String.IsNullOrEmpty(tb.Text))
+                    keyArgs.Handled = !IsValidNumericEntry(keyArgs.Key);
+                    if (keyArgs.Handled == false)
+                    {   // valid digit or decimal separator - check if text will be valid as a double or int
+                        if (IsKeyDecimalSeparator(keyArgs.Key) == true)
                         {
-                            tb.Text = "";
-                        }
-                        else
-                        {
-                            keyArgs.Handled = !NoNonDoubleCharacterText(tb.Text);
+                            if (string.IsNullOrWhiteSpace(tb.Text) || (tb.Text.Contains(CultureInfoHelper.DecimalSeparator) ||
+                                tb.SelectionLength == tb.Text.Length))
+                            {
+                                keyArgs.Handled = true;
+                            }
                         }
                     }
                 }
@@ -120,21 +155,34 @@ namespace TestCustomControl.Behaviors
         }
         #endregion
 
-        private static bool NoNonDoubleCharacterText(string text)
-        {
-            bool invalidNumber = true;
 
-            foreach (char c in text)
+        #region Methods
+        private static bool IsValidNumericEntry(VirtualKey key)
+        {
+            return IsKeyDigit(key) || IsKeyDecimalSeparator(key);
+        }
+
+
+        private static bool IsKeyDigit(VirtualKey key)
+        {
+            return (key >= VirtualKey.Number0 && key <= VirtualKey.Number9) || (key >= VirtualKey.NumberPad0 && key <= VirtualKey.NumberPad9);
+        }
+
+
+        private static bool IsKeyDecimalSeparator(VirtualKey key)
+        {
+            bool isDecimalSeparator = false;
+            if ((key == (VirtualKey)188 && CultureInfoHelper.DecimalSeparator[0] == ',') || 
+                (key == (VirtualKey)190 && CultureInfoHelper.DecimalSeparator[0] == '.') ||
+                (key == VirtualKey.Space && CultureInfoHelper.DecimalSeparator[0] == ' '))
             {
-                if (!Char.IsDigit(c))
-                {
-                    invalidNumber = false;
-                    break;
-                }
+                isDecimalSeparator = true;
             }
 
-            return invalidNumber;
+            return isDecimalSeparator;
         }
+        #endregion
+
 
         #region Event Handlers
         private static void SelectAllText(object sender, RoutedEventArgs e)
@@ -151,6 +199,19 @@ namespace TestCustomControl.Behaviors
                 Int32 newValue;
                 bool conversionSuccess = Int32.TryParse(e.NewValue.ToString(), out newValue);
                 MaxNumberValue = (conversionSuccess) ? newValue : DefaultMaxValue;
+            }
+        }
+
+        private static void OnIsNumericOnlyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            NumericOnly = (bool)(e.NewValue);
+            if (NumericOnly)
+            {
+                (d as TextBox).KeyDown += TextBox_KeyDown;
+            }
+            else
+            {
+                (d as TextBox).KeyDown -= TextBox_KeyDown;
             }
         }
         #endregion

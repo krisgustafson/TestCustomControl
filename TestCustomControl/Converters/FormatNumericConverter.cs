@@ -31,8 +31,7 @@ namespace TestCustomControl.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            double stringToDouble;
-            bool conversionSucceeded = double.TryParse((string)value, out stringToDouble);
+            bool conversionSucceeded = double.TryParse((string)value, out double stringToDouble);
             return conversionSucceeded ? stringToDouble : value;
         }
 
@@ -46,8 +45,7 @@ namespace TestCustomControl.Converters
                 return 3;
             }
 
-            uint precision;
-            if (uint.TryParse((string)parameter, out precision) == false)
+            if (uint.TryParse((string)parameter, out uint precision) == false)
             {
                 throw new ArgumentException(nameof(parameter),
                     $"DoubleMaskConverter.cs - Convert() - ConverterParameter in XAML must be a positive integer, or zero. parameter = '{parameter}'");
@@ -63,8 +61,7 @@ namespace TestCustomControl.Converters
                 return 0.0;
             }
 
-            double val;
-            if (double.TryParse(value, out val) == false)
+            if (double.TryParse(value, out double val) == false)
             {
                 throw new ArgumentException(nameof(value),
                     $"DoubleMaskConverter.cs - Convert() - 'value' from XAML must be convertible to a double. parameter = '{value}'");
